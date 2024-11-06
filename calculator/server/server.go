@@ -1,8 +1,10 @@
 package main
+
 import (
 	"log"
 	"net"
 
+	"google.golang.org/grpc"
 )
 
 type server struct {}
@@ -13,10 +15,10 @@ func main() {
 		log.Fatalf("err while create listen %v",err)
 	}
 
-	s: grpc.NewServer()
+	s:= grpc.NewServer()
 	calculatorpb.RegisterCalculatorServiceServer(s, &server{})
 
-	err: = s.Serve(lis)
+	err := s.Serve(lis)
 	if err != nil {
 		log.Fatalf("err while serve %v",err)
 	}

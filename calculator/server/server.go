@@ -4,6 +4,7 @@ import (
 	"calculator/calculator/calculatorpb"
 	"context"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"time"
@@ -44,6 +45,64 @@ func (*server) PrimeNumberDecomposition(req *calculatorpb.PNDRequest, stream grp
 		}
 	}
 	return nil
+}
+
+func (*server) Average(stream grpc.ClientStreamingServer[calculatorpb.AverageRequest, calculatorpb.AverageResponse]) error {
+	log.Println("Average called..")
+	var total float32
+	var count int
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			//calculate the avergage for all numbers, then return it
+			resp := &calculatorpb.AverageResponse{
+				Result: total / float32(count),
+			}
+
+			return stream.SendAndClose(resp)
+		}
+
+		if err != nil {
+			log.Fatalf("err while Recv Average %v", err)
+
+		}
+		fmt.Println("reqq: ", req)
+		log.Printf("receive num %v", req.GetNum())
+		total += req.GetNum()
+		count++
+
+	}
+}
+
+func (*server) FindMax(stream grpc.BidiStreamingServer[calculatorpb.FindMaxRequest, calculatorpb.FindMaxResponse]) error {
+	log.Println("Find max called...")
+	max := int32(0)
+	for {
+		req, err := stream.Recv()
+		if err == io.EOF {
+			log.Println("EOF...")
+			return nil
+		}
+		if err != nil {
+			log.Fatalf("err while Recv FindMax %v", err)
+			return err
+		}
+		num := req.GetNum()
+		log.Printf("recv num %v\n", num)
+
+		if num > max {
+			max = num
+		}
+		err = stream.Send(&calculatorpb.FindMaxResponse{
+			Max: max,
+		})
+		if err != nil {
+			log.Fatalf("send max err %v", err)
+			return err
+		}
+		log.Println("max is %v  \n", max)
+
+	}
 }
 
 func main() {

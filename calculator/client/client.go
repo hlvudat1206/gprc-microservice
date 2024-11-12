@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"time"
 
 	"google.golang.org/grpc"
 )
@@ -21,7 +22,9 @@ func main() {
 	client := calculatorpb.NewCalculatorServiceClient(cc)
 	// log.Printf("service client %f: ", client)
 	// callSum(client)
-	callPND(client)
+	// callPND(client)
+	// callAverage(client)
+	callFindMax(client)
 
 }
 
@@ -58,4 +61,87 @@ func callPND(c calculatorpb.CalculatorServiceClient) {
 
 		log.Printf("PND %v", resp.GetResult())
 	}
+}
+
+func callAverage(c calculatorpb.CalculatorServiceClient) {
+	log.Println("calling average api")
+	stream, err := c.Average(context.Background())
+	if err != nil {
+		log.Fatalf("call average err %v", err)
+	}
+	listReq := []calculatorpb.AverageRequest{
+		calculatorpb.AverageRequest{
+			Num: 5,
+		},
+		calculatorpb.AverageRequest{
+			Num: 10,
+		},
+		calculatorpb.AverageRequest{
+			Num: 12,
+		},
+	}
+	for _, req := range listReq {
+		err := stream.Send(&req)
+		if err != nil {
+			log.Fatalf("send average request err %v", err)
+		}
+	}
+
+	resp, err := stream.CloseAndRecv()
+	if err != nil {
+		log.Fatalf("receive average request err %v", err)
+
+	}
+
+	log.Printf("average response %v", resp)
+}
+
+func callFindMax(c calculatorpb.CalculatorServiceClient) {
+	log.Println("calling find max")
+	stream, err := c.FindMax(context.Background())
+	if err != nil {
+		log.Fatalf("call find max err %v", err)
+	}
+
+	waitc := make(chan struct{})
+	go func() {
+		listReq := []calculatorpb.FindMaxRequest{
+			calculatorpb.FindMaxRequest{
+				Num: 5,
+			},
+			calculatorpb.FindMaxRequest{
+				Num: 10,
+			},
+			calculatorpb.FindMaxRequest{
+				Num: 12,
+			},
+		}
+		for _, req := range listReq {
+			err := stream.Send(&req)
+			if err != nil {
+				log.Fatalf("send average request err %v", err)
+				break
+			}
+			time.Sleep(1000 * time.Millisecond)
+		}
+		stream.CloseSend()
+	}()
+
+	go func() {
+		for {
+			resp, err := stream.Recv()
+			if err == io.EOF {
+				log.Println("ending find max api...")
+				break
+			}
+			if err != nil {
+				log.Fatalf("recv find max er %v", err)
+				break
+			}
+			log.Println("max: %v", resp.GetMax())
+		}
+		close(waitc)
+	}()
+
+	<-waitc
 }

@@ -9,6 +9,8 @@ import (
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 func main() {
@@ -24,7 +26,10 @@ func main() {
 	// callSum(client)
 	// callPND(client)
 	// callAverage(client)
-	callFindMax(client)
+	// callFindMax(client)
+	// callSquareRoot(client, -4)
+	callSumWithDeadline(client, 1*time.Second) // bi timeout
+	callSumWithDeadline(client, 5*time.Second) // ko bi timeout
 
 }
 
@@ -144,4 +149,51 @@ func callFindMax(c calculatorpb.CalculatorServiceClient) {
 	}()
 
 	<-waitc
+}
+
+func callSquareRoot(c calculatorpb.CalculatorServiceClient, num int32) {
+	log.Println("calling square root api")
+	resp, err := c.Square(context.Background(), &calculatorpb.SquareRequest{
+		Num: num,
+	})
+	if err != nil {
+		log.Fatalf("call square root api err %v", err)
+		if errStatus, ok := status.FromError(err); ok {
+			log.Printf("err msg: %v\n", errStatus.Message())
+			log.Printf("err code: %v\n", errStatus.Code())
+			if errStatus.Code() == codes.InvalidArgument {
+				log.Printf("InvalidArgument run %v", num)
+				return
+			}
+		}
+	}
+	log.Printf("square root response %v\n", resp.GetSquareRoot())
+
+}
+
+func callSumWithDeadline(c calculatorpb.CalculatorServiceClient, timeout time.Duration) {
+	log.Println("calling sum with deadline")
+	ctx, cancel := context.WithTimeout(context.Background(), timeout)
+	defer cancel()
+
+	resp, err := c.SumWithDeadline(ctx, &calculatorpb.SumRequest{
+		Num1: 5,
+		Num2: 6,
+	})
+	if err != nil {
+		if statusErr, ok := status.FromError(err); ok {
+			if statusErr.Code() == codes.DeadlineExceeded {
+				log.Println("calling sum with deadline DeadlineExceeded")
+			} else {
+				log.Printf("calling sum with deadline api err %v", err)
+
+			}
+		} else {
+			log.Fatalf("call sum with deadline unknown err %v", err)
+
+		}
+	}
+	log.Printf("sum with deadline response %v", resp.GetResult())  //Print time log
+	fmt.Println("sum with deadline response is", resp.GetResult()) //no have time log
+
 }

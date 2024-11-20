@@ -20,9 +20,11 @@ const _ = grpc.SupportPackageIsVersion9
 
 const (
 	CalculatorService_Sum_FullMethodName                      = "/calculator.CalculatorService/Sum"
+	CalculatorService_SumWithDeadline_FullMethodName          = "/calculator.CalculatorService/SumWithDeadline"
 	CalculatorService_PrimeNumberDecomposition_FullMethodName = "/calculator.CalculatorService/PrimeNumberDecomposition"
 	CalculatorService_Average_FullMethodName                  = "/calculator.CalculatorService/Average"
 	CalculatorService_FindMax_FullMethodName                  = "/calculator.CalculatorService/FindMax"
+	CalculatorService_Square_FullMethodName                   = "/calculator.CalculatorService/Square"
 )
 
 // CalculatorServiceClient is the client API for CalculatorService service.
@@ -30,9 +32,11 @@ const (
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type CalculatorServiceClient interface {
 	Sum(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
+	SumWithDeadline(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error)
 	PrimeNumberDecomposition(ctx context.Context, in *PNDRequest, opts ...grpc.CallOption) (grpc.ServerStreamingClient[PNDResponse], error)
 	Average(ctx context.Context, opts ...grpc.CallOption) (grpc.ClientStreamingClient[AverageRequest, AverageResponse], error)
 	FindMax(ctx context.Context, opts ...grpc.CallOption) (grpc.BidiStreamingClient[FindMaxRequest, FindMaxResponse], error)
+	Square(ctx context.Context, in *SquareRequest, opts ...grpc.CallOption) (*SquareResponse, error)
 }
 
 type calculatorServiceClient struct {
@@ -47,6 +51,16 @@ func (c *calculatorServiceClient) Sum(ctx context.Context, in *SumRequest, opts 
 	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
 	out := new(SumResponse)
 	err := c.cc.Invoke(ctx, CalculatorService_Sum_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *calculatorServiceClient) SumWithDeadline(ctx context.Context, in *SumRequest, opts ...grpc.CallOption) (*SumResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SumResponse)
+	err := c.cc.Invoke(ctx, CalculatorService_SumWithDeadline_FullMethodName, in, out, cOpts...)
 	if err != nil {
 		return nil, err
 	}
@@ -98,14 +112,26 @@ func (c *calculatorServiceClient) FindMax(ctx context.Context, opts ...grpc.Call
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CalculatorService_FindMaxClient = grpc.BidiStreamingClient[FindMaxRequest, FindMaxResponse]
 
+func (c *calculatorServiceClient) Square(ctx context.Context, in *SquareRequest, opts ...grpc.CallOption) (*SquareResponse, error) {
+	cOpts := append([]grpc.CallOption{grpc.StaticMethod()}, opts...)
+	out := new(SquareResponse)
+	err := c.cc.Invoke(ctx, CalculatorService_Square_FullMethodName, in, out, cOpts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // CalculatorServiceServer is the server API for CalculatorService service.
 // All implementations must embed UnimplementedCalculatorServiceServer
 // for forward compatibility.
 type CalculatorServiceServer interface {
 	Sum(context.Context, *SumRequest) (*SumResponse, error)
+	SumWithDeadline(context.Context, *SumRequest) (*SumResponse, error)
 	PrimeNumberDecomposition(*PNDRequest, grpc.ServerStreamingServer[PNDResponse]) error
 	Average(grpc.ClientStreamingServer[AverageRequest, AverageResponse]) error
 	FindMax(grpc.BidiStreamingServer[FindMaxRequest, FindMaxResponse]) error
+	Square(context.Context, *SquareRequest) (*SquareResponse, error)
 	mustEmbedUnimplementedCalculatorServiceServer()
 }
 
@@ -119,6 +145,9 @@ type UnimplementedCalculatorServiceServer struct{}
 func (UnimplementedCalculatorServiceServer) Sum(context.Context, *SumRequest) (*SumResponse, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method Sum not implemented")
 }
+func (UnimplementedCalculatorServiceServer) SumWithDeadline(context.Context, *SumRequest) (*SumResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method SumWithDeadline not implemented")
+}
 func (UnimplementedCalculatorServiceServer) PrimeNumberDecomposition(*PNDRequest, grpc.ServerStreamingServer[PNDResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method PrimeNumberDecomposition not implemented")
 }
@@ -127,6 +156,9 @@ func (UnimplementedCalculatorServiceServer) Average(grpc.ClientStreamingServer[A
 }
 func (UnimplementedCalculatorServiceServer) FindMax(grpc.BidiStreamingServer[FindMaxRequest, FindMaxResponse]) error {
 	return status.Errorf(codes.Unimplemented, "method FindMax not implemented")
+}
+func (UnimplementedCalculatorServiceServer) Square(context.Context, *SquareRequest) (*SquareResponse, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method Square not implemented")
 }
 func (UnimplementedCalculatorServiceServer) mustEmbedUnimplementedCalculatorServiceServer() {}
 func (UnimplementedCalculatorServiceServer) testEmbeddedByValue()                           {}
@@ -167,6 +199,24 @@ func _CalculatorService_Sum_Handler(srv interface{}, ctx context.Context, dec fu
 	return interceptor(ctx, in, info, handler)
 }
 
+func _CalculatorService_SumWithDeadline_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SumRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CalculatorServiceServer).SumWithDeadline(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CalculatorService_SumWithDeadline_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CalculatorServiceServer).SumWithDeadline(ctx, req.(*SumRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 func _CalculatorService_PrimeNumberDecomposition_Handler(srv interface{}, stream grpc.ServerStream) error {
 	m := new(PNDRequest)
 	if err := stream.RecvMsg(m); err != nil {
@@ -192,6 +242,24 @@ func _CalculatorService_FindMax_Handler(srv interface{}, stream grpc.ServerStrea
 // This type alias is provided for backwards compatibility with existing code that references the prior non-generic stream type by name.
 type CalculatorService_FindMaxServer = grpc.BidiStreamingServer[FindMaxRequest, FindMaxResponse]
 
+func _CalculatorService_Square_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(SquareRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(CalculatorServiceServer).Square(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: CalculatorService_Square_FullMethodName,
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(CalculatorServiceServer).Square(ctx, req.(*SquareRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // CalculatorService_ServiceDesc is the grpc.ServiceDesc for CalculatorService service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -202,6 +270,14 @@ var CalculatorService_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "Sum",
 			Handler:    _CalculatorService_Sum_Handler,
+		},
+		{
+			MethodName: "SumWithDeadline",
+			Handler:    _CalculatorService_SumWithDeadline_Handler,
+		},
+		{
+			MethodName: "Square",
+			Handler:    _CalculatorService_Square_Handler,
 		},
 	},
 	Streams: []grpc.StreamDesc{

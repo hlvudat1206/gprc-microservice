@@ -6,10 +6,13 @@ import (
 	"fmt"
 	"io"
 	"log"
+	"math"
 	"net"
 	"time"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/status"
 )
 
 type server struct {
@@ -103,6 +106,34 @@ func (*server) FindMax(stream grpc.BidiStreamingServer[calculatorpb.FindMaxReque
 		log.Println("max is %v  \n", max)
 
 	}
+}
+
+func (*server) Square(ctx context.Context, req *calculatorpb.SquareRequest) (*calculatorpb.SquareResponse, error) {
+	log.Println("square called...")
+	num := req.GetNum()
+	if num < 0 {
+		log.Printf("req num < 0, num = %v, return InvalidArgument", num)
+		return nil, status.Errorf(codes.InvalidArgument, "Expect num > 0, req num was %v", num)
+	}
+	return &calculatorpb.SquareResponse{
+		SquareRoot: math.Sqrt(float64(num)),
+	}, nil
+}
+
+func (*server) SumWithDeadline(ctx context.Context, req *calculatorpb.SumRequest) (*calculatorpb.SumResponse, error) {
+	fmt.Println("Sum with deadline")
+	for i := 0; i < 3; i++ {
+		if ctx.Err() == context.Canceled {
+			log.Println("context.Canceled...")
+			return nil, status.Errorf(codes.Canceled, "client canceled req")
+		}
+		time.Sleep((1 * time.Second))
+	}
+	resp := &calculatorpb.SumResponse{
+		Result: req.GetNum1() + req.GetNum2(),
+	}
+
+	return resp, nil
 }
 
 func main() {

@@ -1,3 +1,4 @@
+// Store..
 package main
 
 import (
@@ -46,5 +47,22 @@ func Read(phoneNumber string) (*ContactInfo, error) {
 		log.Printf("read contact %+v err %v\n", ci, err)
 		return nil, err
 	}
+	return ci, nil
+}
+
+func (c *ContactInfo) Update() (*ContactInfo, error) {
+	o := orm.NewOrm()
+	ci := &ContactInfo{
+		PhoneNumber: c.PhoneNumber,
+		Name:        c.Name,
+		Address:     c.Address,
+	}
+	num, err := o.Update(ci)
+	if err != nil {
+		log.Printf("Update contact %+v err %v\n", ci, err)
+		return nil, err
+	}
+
+	log.Printf("Update Contact %+v, affect %d row\n", ci, num)
 	return ci, nil
 }

@@ -1,10 +1,16 @@
 syntax = "proto3";
 package contact;
 option go_package = "../contactpb"; 
+import "google/api/annotations.proto";
 
 service ContactService {
   rpc Insert(InsertRequest) returns (InsertResponse){}
-  rpc Read(ReadRequest) returns (ReadResponse){}
+  rpc Read(ReadRequest) returns (ReadResponse){
+     option (google.api.http) = {
+      post: "/contact/read"
+      body: "*"
+   };
+  }
   rpc Update(UpdateRequest) returns (UpdateResponse){}
   rpc Delete (DeleteRequest) returns (DeleteResponse){}
   rpc Search (SearchRequest) returns (SearchResponse){}

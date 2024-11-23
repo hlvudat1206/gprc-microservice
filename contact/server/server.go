@@ -114,6 +114,52 @@ func (server) Update(ctx context.Context, req *contactpb.UpdateRequest) (*contac
 
 }
 
+func (server) Delete(ctx context.Context, req *contactpb.DeleteRequest) (*contactpb.DeleteResponse, error) {
+	log.Printf("call read %s\n", req.GetPhoneNumber())
+	ci, err := Delete(req.GetPhoneNumber())
+
+	if err == orm.ErrNoRows {
+		return nil, status.Errorf(codes.InvalidArgument, "Phone %s not exist", req.GetPhoneNumber())
+	}
+
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "read phone %s err %v", req.GetPhoneNumber(), err)
+	}
+
+	resp := &contactpb.DeleteResponse{
+		StatusCode: 1,
+		Message:    "OK",
+	}
+	fmt.Println("delete ci:: ", ci)
+	return resp, nil
+}
+
+func (server) Search(ctx context.Context, req *contactpb.SearchRequest) (*contactpb.SearchResponse, error) {
+	log.Printf("call search %s\n", req.GetSearchName())
+
+	if len(req.GetSearchName()) == 0 {
+		return nil, status.Errorf(codes.InvalidArgument, "Request search with empty phone number", req.GetSearchName())
+	}
+	listCi, err := SearchByName(req.GetSearchName())
+
+	if err != nil {
+		return nil, status.Errorf(codes.Unknown, "Search phone %s err %v", req.GetSearchName(), err)
+	}
+
+	listPbContact := []*contactpb.Contact{}
+	for _, ci := range listCi {
+		pbContact := &contactpb.Contact{
+			PhoneNumber: ci.PhoneNumber,
+			Name:        ci.Name,
+			Address:     ci.Address,
+		}
+		listPbContact = append(listPbContact, pbContact)
+	}
+	return &contactpb.SearchResponse{
+		Results: listPbContact,
+	}, nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", "0.0.0.0:50070")
 	if err != nil {

@@ -66,3 +66,41 @@ func (c *ContactInfo) Update() (*ContactInfo, error) {
 	log.Printf("Update Contact %+v, affect %d row\n", ci, num)
 	return ci, nil
 }
+
+func Delete(phoneNumber string) (*ContactInfo, error) {
+	o := orm.NewOrm()
+	ci := &ContactInfo{
+		PhoneNumber: phoneNumber,
+		// Name: "Dat",
+	}
+	resp, err := o.Delete(ci) //Read with default primary key
+	// err := o.Read(ci, "name")
+	if err != nil {
+		log.Printf("delete contact %+v err %v\n", ci, err)
+		return nil, err
+	}
+
+	log.Printf("deleted at %v", resp)
+	return ci, nil
+}
+
+func SearchByName(name string) ([]*ContactInfo, error) {
+	result := []*ContactInfo{}
+	o := orm.NewOrm()
+
+	num, err := o.QueryTable(new(ContactInfo)).Filter("name__icontains", name).All(&result)
+
+	if err == orm.ErrNoRows {
+		log.Printf("search %s found no row\n", name)
+		return result, nil
+	}
+
+	if err != nil {
+		log.Printf("search %s err %v\n", name, err)
+		return nil, err
+	}
+
+	log.Printf("search %s found %d row\n", name, num)
+	return result, nil
+
+}

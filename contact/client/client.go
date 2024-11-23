@@ -20,7 +20,9 @@ func main() {
 	// InsertContact(client, "09879810", "Contact4", "Address 4")
 	// ReadContact(client, "098798")
 
-	UpdateContact(client, "09879810", "Contact4", "Address 4222")
+	// UpdateContact(client, "09879810", "Contact4", "Address 4222")
+	// DeleteContact(client, "098798")
+	SearchContact(client, "Contact3")
 
 }
 
@@ -72,4 +74,32 @@ func UpdateContact(cli contactpb.ContactServiceClient, phone, name, address stri
 	}
 
 	log.Printf("update response %+v", resp)
+}
+
+func DeleteContact(cli contactpb.ContactServiceClient, phone string) {
+	req := &contactpb.DeleteRequest{
+		PhoneNumber: phone,
+	}
+	resp, err := cli.Delete(context.Background(), req)
+
+	if err != nil {
+		log.Printf("call delete err %v\n", err)
+		return
+	}
+
+	log.Printf("delete response %+v", resp)
+}
+
+func SearchContact(cli contactpb.ContactServiceClient, name string) {
+	req := &contactpb.SearchRequest{
+		SearchName: name,
+	}
+	resp, err := cli.Search(context.Background(), req)
+
+	if err != nil {
+		log.Printf("call search err %v\n", err)
+		return
+	}
+
+	log.Printf("search response %+v", resp)
 }

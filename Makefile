@@ -20,3 +20,6 @@ run-contact-server:
 
 run-contact-client:
 	go run contact/client/client.go
+
+run-contact-proxy:
+	go run proxy/proxy.go

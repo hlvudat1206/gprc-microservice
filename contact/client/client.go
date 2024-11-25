@@ -49,9 +49,16 @@ func loadTLSCredentials() (credentials.TransportCredentials, error) {
 		return nil, fmt.Errorf("failed to add server CA's certificate")
 	}
 
+	// Load server's certificate and private key
+	clientCert, err := tls.LoadX509KeyPair("contact/cert/client-cert.pem", "contact/cert/client-key.pem")
+	if err != nil {
+		return nil, err
+	}
+
 	// Create the credentials and return it
 	config := &tls.Config{
-		RootCAs: certPool,
+		Certificates: []tls.Certificate{clientCert},
+		RootCAs:      certPool,
 	}
 
 	return credentials.NewTLS(config), nil

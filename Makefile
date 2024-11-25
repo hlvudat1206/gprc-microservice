@@ -23,3 +23,6 @@ run-contact-client:
 
 run-contact-proxy:
 	go run proxy/proxy.go
+
+# cert:
+# 	sh contact/cert/gen.sh

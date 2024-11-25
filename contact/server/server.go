@@ -3,6 +3,7 @@ package main
 import (
 	"calculator/contact/contactpb"
 	"context"
+	"crypto/tls"
 	"fmt"
 	"log"
 	"net"
@@ -11,6 +12,7 @@ import (
 	_ "github.com/go-sql-driver/mysql" // import your used driver	"google.golang.org/grpc"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
+	"google.golang.org/grpc/credentials"
 	"google.golang.org/grpc/status"
 )
 
@@ -160,13 +162,34 @@ func (server) Search(ctx context.Context, req *contactpb.SearchRequest) (*contac
 	}, nil
 }
 
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// Load server's certificate and private key
+	serverCert, err := tls.LoadX509KeyPair("contact/cert/server-cert.pem", "contact/cert/server-key.pem")
+	if err != nil {
+		return nil, err
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		Certificates: []tls.Certificate{serverCert},
+		ClientAuth:   tls.NoClientCert,
+	}
+
+	return credentials.NewTLS(config), nil
+}
+
 func main() {
 	lis, err := net.Listen("tcp", "0.0.0.0:50070")
 	if err != nil {
 		log.Fatalf("err while create listen %v", err)
 	}
 
-	s := grpc.NewServer()
+	tlsCredentials, err := loadTLSCredentials()
+	if err != nil {
+		log.Fatal("cannot load TLS credentials: ", err)
+	}
+
+	s := grpc.NewServer(grpc.Creds(tlsCredentials))
 
 	contactpb.RegisterContactServiceServer(s, &server{})
 	fmt.Println("calculator is running")

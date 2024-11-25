@@ -3,13 +3,24 @@ package main
 import (
 	"calculator/contact/contactpb"
 	"context"
+	"crypto/tls"
+	"crypto/x509"
+	"fmt"
+	"io/ioutil"
 	"log"
 
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials"
 )
 
 func main() {
-	cc, err := grpc.Dial("0.0.0.0:50070", grpc.WithInsecure())
+
+	tlsCredentials, err := loadTLSCredentials()
+	if err != nil {
+		log.Fatal("cannot load TLS credentials: ", err)
+	}
+
+	cc, err := grpc.Dial("0.0.0.0:50070", grpc.WithTransportCredentials(tlsCredentials)) //grpc.WithInsecure()
 
 	if err != nil {
 		log.Fatalf("err while dial %v", err)
@@ -22,8 +33,28 @@ func main() {
 
 	// UpdateContact(client, "09879810", "Contact4", "Address 4222")
 	// DeleteContact(client, "098798")
-	SearchContact(client, "Contact3")
+	SearchContact(client, "Contact2")
 
+}
+
+func loadTLSCredentials() (credentials.TransportCredentials, error) {
+	// Load certificate of the CA who signed server's certificate
+	pemServerCA, err := ioutil.ReadFile("contact/cert/ca-cert.pem")
+	if err != nil {
+		return nil, err
+	}
+
+	certPool := x509.NewCertPool()
+	if !certPool.AppendCertsFromPEM(pemServerCA) {
+		return nil, fmt.Errorf("failed to add server CA's certificate")
+	}
+
+	// Create the credentials and return it
+	config := &tls.Config{
+		RootCAs: certPool,
+	}
+
+	return credentials.NewTLS(config), nil
 }
 
 func InsertContact(cli contactpb.ContactServiceClient, phone, name, addr string) {

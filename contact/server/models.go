@@ -2,8 +2,9 @@
 package main
 
 import (
-	"calculator/contact/contactpb"
 	"log"
+
+	"github.com/hlvudat1206/gprc-microservice-test/contact/contactpb"
 
 	"github.com/beego/beego/v2/client/orm"
 )

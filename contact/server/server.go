@@ -1,7 +1,6 @@
 package main
 
 import (
-	"calculator/contact/contactpb"
 	"context"
 	"crypto/tls"
 	"crypto/x509"
@@ -12,6 +11,7 @@ import (
 
 	"github.com/beego/beego/v2/client/orm"
 	_ "github.com/go-sql-driver/mysql" // import your used driver	"google.golang.org/grpc"
+	"github.com/hlvudat1206/gprc-microservice-test/contact/contactpb"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"
 	"google.golang.org/grpc/credentials"

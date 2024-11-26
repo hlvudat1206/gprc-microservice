@@ -1,7 +1,8 @@
 package main
 
 import (
-	"calculator/calculator/calculatorpb"
+	"github.com/hlvudat1206/gprc-microservice-test/calculator/calculatorpb"
+
 	"context"
 	"fmt"
 	"io"

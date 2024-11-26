@@ -1,12 +1,13 @@
 package main
 
 import (
-	"calculator/calculator/calculatorpb"
 	"context"
 	"fmt"
 	"io"
 	"log"
 	"time"
+
+	"github.com/hlvudat1206/gprc-microservice-test/calculator/calculatorpb"
 
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/codes"

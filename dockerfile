@@ -4,9 +4,11 @@ WORKDIR /app
 
 COPY go.mod go.sum ./
 
-RUN go mod .
-COPY main.go contact/server/server.go
+RUN go mod download
 
-RUN go build  -o bin .
+COPY contact/server/server.go .
+
+RUN go get
+RUN go build -o bin .
 
 ENTRYPOINT ["/app/bin"]

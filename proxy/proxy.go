@@ -11,7 +11,7 @@ import (
 	"google.golang.org/grpc/credentials/insecure"
 	"google.golang.org/grpc/grpclog"
 
-	gw "calculator/contact/contactpb"
+	gw "github.com/hlvudat1206/gprc-microservice-test/contact/contactpb"
 )
 
 var (

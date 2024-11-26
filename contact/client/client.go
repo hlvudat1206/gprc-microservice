@@ -1,7 +1,9 @@
 package main
 
 import (
-	"calculator/contact/contactpb"
+	// "calculator/contact/contactpb"
+	"github.com/hlvudat1206/gprc-microservice-test/contact/contactpb"
+
 	"context"
 	"crypto/tls"
 	"crypto/x509"

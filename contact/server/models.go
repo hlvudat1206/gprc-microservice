@@ -4,7 +4,7 @@ package main
 import (
 	"log"
 
-	"github.com/hlvudat1206/gprc-microservice-test/contact/contactpb"
+	"github.com/hlvudat1206/grpc-microservice-test/contact/contactpb"
 
 	"github.com/beego/beego/v2/client/orm"
 )

@@ -1,4 +1,4 @@
-module github.com/hlvudat1206/gprc-microservice-test
+module github.com/hlvudat1206/grpc-microservice-test
 
 go 1.23.2
 
